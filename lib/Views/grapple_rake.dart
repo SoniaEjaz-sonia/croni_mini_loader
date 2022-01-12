@@ -1,8 +1,46 @@
+import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:video_player/video_player.dart';
 
-class GrappleRake extends StatelessWidget {
+class GrappleRake extends StatefulWidget {
   const GrappleRake({Key? key}) : super(key: key);
+
+  @override
+  State<GrappleRake> createState() => _GrappleRakeState();
+}
+
+class _GrappleRakeState extends State<GrappleRake> {
+  late VideoPlayerController _controller;
+  ChewieController? _chewieController;
+
+  @override
+  void initState() {
+    super.initState();
+    initializePlayer();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _chewieController?.dispose();
+    super.dispose();
+  }
+
+  Future<void> initializePlayer() async {
+    _controller = VideoPlayerController.asset('assets/grapple-rake.mp4');
+    await Future.wait([_controller.initialize()]);
+    _createChewieController();
+    setState(() {});
+  }
+
+  void _createChewieController() {
+    _chewieController = ChewieController(
+      videoPlayerController: _controller,
+      autoPlay: false,
+      looping: false,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -285,8 +323,8 @@ class GrappleRake extends StatelessWidget {
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  ListTile(
+                children: [
+                  const ListTile(
                     title: Padding(
                       padding: EdgeInsets.only(top: 8.0),
                       child: Text(
@@ -309,6 +347,23 @@ class GrappleRake extends StatelessWidget {
                         style: TextStyle(fontSize: 13),
                       ),
                     ),
+                  ),
+                  SizedBox(
+                    height: 200,
+                    width: double.infinity,
+                    child: _chewieController != null &&
+                            _chewieController!
+                                .videoPlayerController.value.isInitialized
+                        ? ClipRRect(
+                            borderRadius: const BorderRadius.only(
+                              bottomLeft: Radius.circular(30.0),
+                              bottomRight: Radius.circular(30.0),
+                            ),
+                            child: Chewie(
+                              controller: _chewieController!,
+                            ),
+                          )
+                        : const CircularProgressIndicator(),
                   ),
                 ],
               ),

@@ -1,15 +1,153 @@
+import 'package:carousel_slider/carousel_slider.dart';
+import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:video_player/video_player.dart';
 
-class MLAgriculture extends StatelessWidget {
-  MLAgriculture({Key? key}) : super(key: key);
+List<T> map<T>(List list, Function handler) {
+  List<T> result = [];
+  for (var i = 0; i < list.length; i++) {
+    result.add(handler(i, list[i]));
+  }
+  return result;
+}
 
+class MLAgriculture extends StatefulWidget {
+  const MLAgriculture({Key? key}) : super(key: key);
+
+  @override
+  State<MLAgriculture> createState() => _MLAgricultureState();
+}
+
+class _MLAgricultureState extends State<MLAgriculture> {
   List<List<String>> croniIndustries = [
     ['Pallet fork for mini loader', 'img15', '/attachments/pallet-fork'],
     ['Grapple rake for mini loader', 'img17', '/attachments/grapple-rake'],
     ['Rake for mini loader', 'img12', '/attachments/rake'],
     ['Broom for mini loader', 'img10', '/attachments/broom'],
   ];
+
+  List<String> images = [
+    'img2',
+    'img6',
+    'img18',
+    'img20',
+    'img12',
+    'img28',
+    'img29',
+    'img17',
+    'img10',
+  ];
+
+  int _current = 0;
+  late VideoPlayerController _controller1;
+  late VideoPlayerController _controller2;
+  ChewieController? _chewieController1;
+  ChewieController? _chewieController2;
+
+  @override
+  void initState() {
+    super.initState();
+    initializePlayer();
+  }
+
+  @override
+  void dispose() {
+    _controller1.dispose();
+    _controller2.dispose();
+    _chewieController1?.dispose();
+    _chewieController2?.dispose();
+    super.dispose();
+  }
+
+  Future<void> initializePlayer() async {
+    _controller1 = VideoPlayerController.asset('assets/m-l-grapple-rake.mp4');
+    _controller2 = VideoPlayerController.asset('assets/hedgetrimmer.mp4');
+    await Future.wait([_controller1.initialize()]);
+    await Future.wait([_controller2.initialize()]);
+    _createChewieController1();
+    _createChewieController2();
+    setState(() {});
+  }
+
+  void _createChewieController1() {
+    _chewieController1 = ChewieController(
+      videoPlayerController: _controller1,
+      autoPlay: false,
+      looping: false,
+    );
+  }
+
+  void _createChewieController2() {
+    _chewieController2 = ChewieController(
+      videoPlayerController: _controller2,
+      autoPlay: false,
+      looping: false,
+    );
+  }
+
+  Widget plotImages(List<String> images) {
+    if (images.isEmpty) {
+      return Container();
+    }
+    return Column(
+      children: <Widget>[
+        Stack(
+          children: <Widget>[
+            CarouselSlider(
+              items: images.map((image) {
+                return Builder(
+                  builder: (BuildContext context) {
+                    return Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.symmetric(
+                          horizontal: 10.0, vertical: 10.0),
+                      decoration: const BoxDecoration(color: Colors.white),
+                      child: Image.asset(
+                        'images/' + image + '.jpg',
+                        fit: BoxFit.cover,
+                        height: 300.0,
+                      ),
+                    );
+                  },
+                );
+              }).toList(),
+              options: CarouselOptions(
+                enableInfiniteScroll: false,
+                viewportFraction: 1.0,
+                height: 300,
+                onPageChanged: (index, reason) {
+                  setState(() {
+                    _current = index;
+                  });
+                },
+              ),
+            ),
+            Positioned(
+              left: MediaQuery.of(context).size.width / 3.0,
+              bottom: 10.0,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: map<Widget>(images, (index, url) {
+                  return Container(
+                    width: 10.0,
+                    height: 10.0,
+                    margin: const EdgeInsets.symmetric(
+                        vertical: 10.0, horizontal: 2.0),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: _current == index ? Colors.white : Colors.orange,
+                    ),
+                  );
+                }),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -254,11 +392,15 @@ class MLAgriculture extends StatelessWidget {
                               topRight: Radius.circular(30.0),
                             ),
                             child: SizedBox(
+                              height: 200,
                               width: double.infinity,
-                              child: Image.asset(
-                                'images/img4.jpg',
-                                fit: BoxFit.contain,
-                              ),
+                              child: _chewieController1 != null &&
+                                      _chewieController1!.videoPlayerController
+                                          .value.isInitialized
+                                  ? Chewie(
+                                      controller: _chewieController1!,
+                                    )
+                                  : const CircularProgressIndicator(),
                             ),
                           ),
                           Container(
@@ -307,11 +449,15 @@ class MLAgriculture extends StatelessWidget {
                               topRight: Radius.circular(30.0),
                             ),
                             child: SizedBox(
+                              height: 200,
                               width: double.infinity,
-                              child: Image.asset(
-                                'images/img4.jpg',
-                                fit: BoxFit.contain,
-                              ),
+                              child: _chewieController2 != null &&
+                                      _chewieController2!.videoPlayerController
+                                          .value.isInitialized
+                                  ? Chewie(
+                                      controller: _chewieController2!,
+                                    )
+                                  : const CircularProgressIndicator(),
                             ),
                           ),
                           Container(
@@ -371,13 +517,7 @@ class MLAgriculture extends StatelessWidget {
                       ),
                     ),
                   ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: Image.asset(
-                      'images/img4.jpg',
-                      fit: BoxFit.contain,
-                    ),
-                  ),
+                  plotImages(images),
                   Container(
                     padding: const EdgeInsets.only(
                       top: 15,
