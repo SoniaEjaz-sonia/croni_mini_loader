@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="eu.croni.croni_mini">
    <application
-        android:label="croni_mini"
+        android:label="croni"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_custom_clippers/flutter_custom_clippers.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HomePage extends StatelessWidget {
   HomePage({Key? key}) : super(key: key);
@@ -193,6 +194,14 @@ class HomePage extends StatelessWidget {
     );
   }
 
+  void _launchURL(String url) async {
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -242,6 +251,29 @@ class HomePage extends StatelessWidget {
                   },
                 ),
               ),
+              const Divider(),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                      onPressed: () =>
+                          _launchURL("https://www.facebook.com/cronieu"),
+                      icon: Image.asset('images/fb.png')),
+                  IconButton(
+                      onPressed: () => _launchURL(
+                          "https://www.linkedin.com/company/71562210"),
+                      icon: Image.asset('images/linkedin.png')),
+                  IconButton(
+                      onPressed: () => _launchURL(
+                          "https://www.youtube.com/channel/UCa-GZ4RvvX0_pcp1E20z5Gg"),
+                      icon: Image.asset('images/yt.png')),
+                  IconButton(
+                      onPressed: () => _launchURL(
+                          "https://www.instagram.com/cronieu/?hl=da"),
+                      icon: Image.asset('images/insta.png')),
+                ],
+              ),
+              const Divider(),
             ],
           ),
         ),
